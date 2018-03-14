@@ -3,8 +3,8 @@ import GPy as gpy
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 from scipy.stats import norm
-import helper
-from active_learner import ActiveLearner
+import utils.helper as helper
+from active_learners.active_learner import ActiveLearner
 import scipy
 import time
 import logging
@@ -216,3 +216,4 @@ class ActiveGP(ActiveLearner):
             ac_f, None, self.func.x_range[:, self.func.param_idx], 10000, x0)
         
         return np.hstack((x_star, context))
+

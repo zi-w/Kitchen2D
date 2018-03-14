@@ -9,10 +9,50 @@ from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 import GPy as gpy
-from active_gp import ActiveGP
 from scipy.stats import truncnorm
 from functools import partial
 EPS = 1e-4
+
+
+
+def get_xx_yy(expid, c_i, method, exp='pour'):
+    dirnm = 'data/{}_{}/'.format(exp, expid)
+    if exp == 'pour':
+        fnm_prefix = os.path.join(
+            dirnm, 'res_sample_5')
+        initx, inity = pickle.load(
+            open(os.path.join(dirnm, 'init_data.pk'), 'rb'))
+        fnm = '{}_{}_c_{}.pk'.format(fnm_prefix, method, c_i)
+        xx, yy, _, _, _, c = pickle.load(open(fnm, 'rb'))
+    elif exp == 'scoop':
+        fnm_prefix = os.path.join(
+            dirnm, 'res_sample_2')
+        initx, inity = pickle.load(
+            open(os.path.join(dirnm, 'init_data.pk'), 'rb'))
+        fnm = '{}_{}_c_{}.pk'.format(fnm_prefix, method, c_i)
+        xx, yy, _, _, _, c = pickle.load(open(fnm, 'rb'))
+    xx = np.vstack((initx, xx))
+    yy = np.hstack((inity, yy))
+    '''
+    fnm = '{}_{}_c_{}.pk'.format(fnm_prefix, 'random', c_i)
+    initx, inity, _, _, _, c = pickle.load(open(fnm, 'rb'))
+    xx = np.vstack((initx, xx))
+    yy = np.hstack((inity, yy))
+    '''
+    return xx,yy,c
+def process_gp_sample(expid, c_i, is_adapt=None, is_uniform=True, task_lengthscale=None, exp='pour', betalambda=0.95):
+    xx, yy, c = get_xx_yy(expid, c_i, 'gp_lse', exp=exp)
+    if exp == 'pour':
+        from kitchen2d.pour import Pour
+        func = Pour()
+    elif exp == 'scoop':
+        from kitchen2d.scoop import Scoop
+        func = Scoop()
+    from active_learners.active_gp import ActiveGP
+    gp = ActiveGP(func, xx, yy, 'lse', is_adapt=is_adapt, is_uniform=is_uniform,
+        task_lengthscale=task_lengthscale, betalambda=betalambda)
+    gp.retrain()
+    return gp, c
 
 def diversity(xx, active_dim):
     n = len(xx)
@@ -45,85 +85,7 @@ def sample_gmm(center, scale, n, xmin, xmax):
     prob = np.sum(prob, axis=0) / slen
     np.clip(prob, EPS, 1/EPS)
     return x_samples_gmm, 1./prob
-def get_xx_yy(expid, c_i, method, exp='pour'):
-    dirnm = 'data/problems/{}_{}/'.format(exp, expid)
-    if exp == 'pour':
-        fnm_prefix = os.path.join(
-            dirnm, 'res_sample_5')
-        initx, inity = pickle.load(
-            open(os.path.join(dirnm, 'init_data.pk'), 'rb'))
-        fnm = '{}_{}_c_{}.pk'.format(fnm_prefix, method, c_i)
-        xx, yy, _, _, _, c = pickle.load(open(fnm, 'rb'))
-    elif exp == 'push1d':
-        fnm_prefix = os.path.join(dirnm, 'res_pos_ratio_{}'.format(0.3))
-        initx, inity = pickle.load(
-            open(os.path.join(dirnm, 'pos_ratio_0.3.pk'), 'rb'))
-        fnm = '{}_{}_c_{}.pk'.format(fnm_prefix, method, c_i)
-        xx, yy, _, _, c = pickle.load(open(fnm, 'rb'))
-    elif exp == 'push':
-        fnm_prefix = os.path.join(
-            dirnm, 'res_sample_10_pos_ratio_{}'.format(0.3))
-        initx, inity = pickle.load(
-            open(os.path.join(dirnm, 'pos_ratio_0.3.pk'), 'rb'))
-        fnm = '{}_{}_c_{}.pk'.format(fnm_prefix, method, c_i)
-        if c_i > 0:
-            fnm = '{}_iters_200_{}_c_{}.pk'.format(fnm_prefix, method, c_i)
-        xx, yy, _, _, c = pickle.load(open(fnm, 'rb'))
-    elif exp == 'scoop':
-        fnm_prefix = os.path.join(
-            dirnm, 'res_sample_2')
-        initx, inity = pickle.load(
-            open(os.path.join(dirnm, 'init_data.pk'), 'rb'))
-        fnm = '{}_{}_c_{}.pk'.format(fnm_prefix, method, c_i)
-        xx, yy, _, _, _, c = pickle.load(open(fnm, 'rb'))
-    xx = np.vstack((initx, xx))
-    yy = np.hstack((inity, yy))
-    '''
-    fnm = '{}_{}_c_{}.pk'.format(fnm_prefix, 'random', c_i)
-    initx, inity, _, _, _, c = pickle.load(open(fnm, 'rb'))
-    xx = np.vstack((initx, xx))
-    yy = np.hstack((inity, yy))
-    '''
-    return xx,yy,c
-def process_gp_sample(expid, c_i, is_adapt=None, is_uniform=True, task_lengthscale=None, exp='pour', betalambda=0.95):
-    xx, yy, c = get_xx_yy(expid, c_i, 'gp_lse', exp=exp)
-    if exp == 'pour':
-        from pour import Pour
-        func = Pour()
-    elif exp == 'push1d':
-        from push import Push1D, Push
-        func = Push1D()
-    elif exp == 'push':
-        from push import Push1D, Push
-        func = Push()
-    elif exp == 'scoop':
-        from scoop import Scoop
-        func = Scoop()
 
-    gp = ActiveGP(func, xx, yy, 'lse', is_adapt=is_adapt, is_uniform=is_uniform,
-        task_lengthscale=task_lengthscale, betalambda=betalambda)
-    gp.retrain()
-    return gp, c
-
-def process_nn_sample(expid, c_i, method, exp='pour'):
-    from active_nn import ActiveNN
-    xx, yy, c = get_xx_yy(expid, c_i, method, exp=exp)
-    if exp == 'pour':
-        from pour import Pour
-        func = Pour()
-    elif exp == 'push1d':
-        from push import Push1D, Push
-        func = Push1D()
-    elif exp == 'push':
-        from push import Push1D, Push
-        func = Push()
-        
-    if method is 'nn_classification':
-        nn = ActiveNN(func, xx, yy, 'classification')
-    else:
-        nn = ActiveNN(func, xx, yy, 'regression')
-    nn.retrain()
-    return nn, c
 def posa_metric(pos, angle, pos2, angle2):
     d1 = np.linalg.norm(np.array(pos) - np.array(pos2))
     def angle2sincos(angle):

@@ -9,7 +9,7 @@ import json
 import sys
 import copy
 from scipy.spatial import ConvexHull
-import helper
+import utils.helper as helper
 import sys
 
 

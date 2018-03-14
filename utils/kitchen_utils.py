@@ -3,8 +3,8 @@ from ss.model.problem import get_length, get_cost
 
 import math
 
-import kitchen_stuff as ks
-from kitchen_stuff import Kitchen2D, Gripper
+import kitchen2d.kitchen_stuff as ks
+from kitchen2d.kitchen_stuff import Kitchen2D, Gripper
 
 SCALE_COST = 100.
 
