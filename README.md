@@ -16,14 +16,21 @@ We tested our code with Python 2.7.6 on Ubuntu 14.04 LTS (64-bit) and Mac OS X. 
 
 1. Follow the instructions [here](https://github.com/pybox2d/pybox2d/blob/master/INSTALL.md) to install [pybox2d](https://github.com/pybox2d/pybox2d).
 
-2. Follow the instructions [here](https://github.com/SheffieldML/GPy#getting-started-installing-with-pip) to install [GPy](https://sheffieldml.github.io/GPy/).
+2. To run the learning examples, follow the instructions [here](https://github.com/SheffieldML/GPy#getting-started-installing-with-pip) to install [GPy](https://sheffieldml.github.io/GPy/).
 
-3. Follow the instructions [here](http://www.fast-downward.org/ObtainingAndRunningFastDownward) to obtain [Fast Downward](http://www.fast-downward.org).
+3. To run the planning examples, follow the instructions [here](http://www.fast-downward.org/ObtainingAndRunningFastDownward) to obtain [Fast Downward](http://www.fast-downward.org).
 
 ## Examples
-coffee_task.py is an example of planning with learned pouring and scooping actions. The goal is to “serve” a cup of coffee with cream and sugar by placing it on the green coaster near the edge of the table. [Click here for vidoes of plans.](https://www.youtube.com/playlist?list=PLoWhBFPMfSzDbc8CYelsbHZa1d3uz-W_c&disable_polymer=true)
 
-The motion premitives are in kitchen_stuff.py. An example of using the primitives is in test_kitchen_stuff.py.
+### Example of Primitives
+The motion premitives are in kitchen_stuff.py. An example of using the primitives is in primitive_example.py.
+
+### Example of Learning
+We show an example of both learning and sampling the scooping action in learn_example.py. We adopt an active learning view to learn the feasible region of the pre-conditions of the primitives. In order to plan with the learned pre-conditions, we need to be able to sample from its feasible regions. The detailed algorithm and setups we used can be found in [Section IV.A of the accompanying paper](https://arxiv.org/abs/1803.00967).
+
+### Example of Planning
+coffee_task.py is an example of planning with learned pouring and scooping actions. We use STRIPSream as the backend planner. The goal is to “serve” a cup of coffee with cream and sugar by placing it on the green coaster near the edge of the table. [Click here for vidoes of plans.](https://www.youtube.com/playlist?list=PLoWhBFPMfSzDbc8CYelsbHZa1d3uz-W_c&disable_polymer=true) 
+
 
 ## Citation
 Please cite our work if you would like to use the code.
