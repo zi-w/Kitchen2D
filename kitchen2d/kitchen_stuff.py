@@ -1241,9 +1241,7 @@ class Gripper(object):
     def find_path(self, dpos, dangle, buffer=None, motion_angle=0):
         if helper.posa_metric(self.position, self.angle, dpos, dangle) < ACC_THRES:
             return True
-
-        
-
+            
         traj = self.plan_path(dpos, dangle, buffer=buffer, motion_angle=motion_angle)
         if traj is None:
             return False  # this means no path found
