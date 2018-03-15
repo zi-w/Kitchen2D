@@ -337,8 +337,9 @@ def get_gripper_lrpos(init_pos, init_angle, width):
 
 class Gripper(object):
     def __init__(self, b2world_interface, init_pos=None, init_angle=None,
-                 lgripper_pos=None, rgripper_pos=None, pj_motorSpeed=MOTOR_SPEED, init_width=OPEN_WIDTH,
-                 gripper_width=GRIPPER_WIDTH, gripper_height=GRIPPER_HEIGHT):
+                 lgripper_pos=None, rgripper_pos=None, pj_motorSpeed=MOTOR_SPEED, 
+                 init_width=OPEN_WIDTH, gripper_width=GRIPPER_WIDTH, 
+                 gripper_height=GRIPPER_HEIGHT, iscopy=False):
         assert(init_angle is not None)
         world = b2world_interface.world
         self.b2w = b2world_interface
@@ -359,6 +360,7 @@ class Gripper(object):
         self.grasped_obj = None
         self.reset_mass()
         self.planning = self.b2w.planning
+        self.iscopy = iscopy
     def reset_mass(self):
         self.mass = self.lgripper.mass + self.rgripper.mass
     def open(self, timeout=1.):
@@ -1019,6 +1021,7 @@ class Gripper(object):
             res_id = np.max([res_id, -len(traj)])
         return traj[:res_id+1], collision#traj[res_id::-10], collision
     def check_collision(self):
+        assert self.iscopy, 'only copied gripper can check collisions'
         contacts = self.lgripper.contacts + self.rgripper.contacts
         if self.grasped:
             contacts += self.grasped_obj.contacts
@@ -1107,7 +1110,8 @@ class Gripper(object):
                      lgripper_pos=self.lgripper.position.copy(),
                      rgripper_pos=self.rgripper.position.copy(),
                      init_angle=self.angle,
-                     pj_motorSpeed=self.pj.motorSpeed)
+                     pj_motorSpeed=self.pj.motorSpeed,
+                     iscopy=True)
         if self.grasped:
             #b2w2.enable_gui()
             g2.grasped = True
@@ -1241,7 +1245,7 @@ class Gripper(object):
     def find_path(self, dpos, dangle, buffer=None, motion_angle=0):
         if helper.posa_metric(self.position, self.angle, dpos, dangle) < ACC_THRES:
             return True
-            
+
         traj = self.plan_path(dpos, dangle, buffer=buffer, motion_angle=motion_angle)
         if traj is None:
             return False  # this means no path found
@@ -1265,53 +1269,6 @@ class Gripper(object):
                 break
             #    return False # this means it failed online test
         return True
-
-"""
-class Node(object):
-    def __init__(self, pos, angle, parent=None):
-        self.pos = pos
-        self.angle = angle
-        self.parent = parent
-    def retrace(self):
-        traj = []
-        node = self
-        while node is not None:
-            traj.append(np.hstack((node.pos, node.angle)))
-            node = node.parent
-        return traj[::-1]
-
-def rrt(pos, angle, dpos, dangle, check_point_collision, check_path_collision, goal_prob=0.05, iters=1000):
-    nodes = [Node(pos, angle)]
-    for i in xrange(iters):
-        if np.random.rand() < goal_prob:
-            s_pos = dpos
-            s_a = dangle
-            #import pdb;pdb.set_trace()
-        else:
-            s_pos = np.random.uniform([-SCREEN_WIDTH/2.,0],[SCREEN_WIDTH/2,SCREEN_HEIGHT-TABLE_HEIGHT])
-            if np.random.rand() < 0.5:
-                s_a = angle
-            else:
-                s_a = dangle
-            #if np.random.rand() < 0.1:
-            #    s_pos = pos - np.array((5., 0.))
-            #elif np.random.rand() < 0.2:
-            #    s_pos = pos + np.array((0. ,5.))
-            #    s_pos[1] = np.min([SCREEN_HEIGHT-TABLE_HEIGHT-10.])
-        closest_id = np.argmin([helper.posa_metric(s_pos, s_a, 
-                                                   node.pos, node.angle) for node in nodes])
-        last = nodes[closest_id]
-        if last.angle == dangle:
-            s_a = dangle
-        traj, collision = check_path_collision(last.pos, last.angle, s_pos, s_a)
-        print i, len(traj), len(nodes) # TODO(caelan): the size of the tree grows quickly...
-        for p in traj:
-            last = Node(p[0], p[1], last)
-            nodes.append(last)
-            if helper.posa_metric(p[0], p[1], dpos, dangle) < 0.05:
-                return np.array(last.retrace())
-    return None
-"""
 
 def linear_rotate(pos, angle, dangle, check_point_collision, step_size=np.pi/16):
     path = [np.hstack([pos, angle])]
@@ -1381,11 +1338,6 @@ def copy_kitchen(kitchen, grasped_obj):
     for b in kitchen.world.bodies:
         if (b.userData in COPY_IGNORE) or (b == grasped_obj):
             continue
-        #countertop = b.userData is 'countertop'
-        #if countertop:
-        #    userData = 'countertop'
-        #else:
-        #    userData = 'obstacle'
         obstacle = b2w.world.CreateStaticBody(
             position=b.position, angle=b.angle, userData='obstacle')
         for fixture in b.fixtures:
