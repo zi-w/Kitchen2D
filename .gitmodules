@@ -1,0 +1,6 @@
+[submodule "motion-planners"]
+	path = motion-planners
+	url = git@github.com:caelan/motion-planners.git
+[submodule "pddlstream"]
+	path = pddlstream
+	url = git@github.com:caelan/pddlstream.git
