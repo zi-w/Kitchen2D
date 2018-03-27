@@ -43,36 +43,29 @@ class RandomSampler(ActiveLearner):
         pass
 
 
-def test_activelearner(active_learner, func, contexts, fnm_prefix, num_sample, iters):
-    n_c = 1#len(contexts)
-    for c_i in range(n_c):
-        fnm = '{}_{}_c_{}.pk'.format(fnm_prefix, active_learner.name, c_i)
-        evalfnm = '{}_{}_c_{}_eval.pk'.format(fnm_prefix, active_learner.name, c_i)
-        c = contexts[c_i]
-        xq, yq = None, None
-        xx = np.zeros((iters, func.x_range.shape[1]))
-        yy = np.zeros(iters)
-        sampled_xx = []
-        sampled_yy = []
-        sampled_xx_ts = []
-        sampled_xx_ts2 = []
-        i_start = -1
+def run_ActiveLearner(active_learner, context, save_fnm, iters):
+    '''
+    Actively query a function with active learner.
+    Args:
+        active_learner: an ActiveLearner object.
+        context: the current context we are testing for the function.
+        save_fnm: a file name string to save the queries.
+        iters: total number of queries.
+    '''
+    # Retrieve the function associated with active_learner
+    func = active_learner.func
+    # Queried x and y
+    xq, yq = None, None
+    # All the queries x and y
+    xx = np.zeros((0, func.x_range.shape[1]))
+    yy = np.zeros(0)
+    # Start active queries
+    for i in range(iters):
+        active_learner.retrain(xq, yq)
+        xq = active_learner.query(context)
+        yq = func(xq)
+        xx = np.vstack((xx, xq))
+        yy = np.hstack((yy, yq))
+        print('i={}, xq={}, yq={}'.format(i, xq, yq))
 
-        tot_sample_time = 0
-        for i in range(i_start+1, iters):
-            active_learner.retrain(xq, yq)
-            start = time.time()
-            sampled_xx.append(active_learner.sample(c))
-            sampled_yy.append(func(sampled_xx[-1]))
-            active_learner.reset_sample()
-            #sampled_xx_ts.append(active_learner.sample_MH(c, num_sample))
-            tot_sample_time += time.time() - start
-            xq = active_learner.query(c)
-            yq = func(xq)
-            xx[i] = xq
-            yy[i] = yq
-            print('i={}, xq={}, yq={}'.format(i, xq, yq))
-
-            pickle.dump((xx, yy, sampled_xx, sampled_xx_ts, i, c), open(fnm, 'wb'))
-            pickle.dump((sampled_xx, sampled_yy), open(evalfnm, 'wb'))
-        print('total sample time = {}'.format(tot_sample_time))
+        pickle.dump((xx, yy, context), open(save_fnm, 'wb'))

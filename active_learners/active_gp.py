@@ -1,16 +1,33 @@
+# Author: Zi Wang
 import numpy as np
 import GPy as gpy
-from scipy.optimize import minimize
-import matplotlib.pyplot as plt
 from scipy.stats import norm
-import utils.helper as helper
+import helper
 from active_learners.active_learner import ActiveLearner
-import scipy
 import time
-import logging
 
 class ActiveGP(ActiveLearner):
-    def __init__(self, func, initx, inity, query_type, fixmodel=True, is_adapt=False, is_uniform=False, task_lengthscale=None, betalambda=0.999, sample_time_limit=200):
+    '''
+    Active learner with a GP backend.
+    '''
+    def __init__(self, func, initx, inity, query_type, flag_lk=False, 
+                 is_adaptive=False, task_lengthscale=None, betalambda=0.999, 
+                 sample_time_limit=200):
+        '''
+        func: scoring function
+        initx: initial inputs
+        inity: initial outputs
+        query_type: type of query ('lse' or 'best_prob')
+        flag_lk: False if using diverse sampler with a fixed kernel; 
+                 True if using diverse sampler with a kernel learned online.
+        is_adaptive: True if using the adaptive sampler; False if using the 
+        diverse sampler; None if using rejection sampler with uniform proposal
+        distribution.
+        task_lengthscale: the inverse length scale of the kernel for diverse sampling.
+        betalambda: a hyper parame
+        sample_time_limit: time limit (seconds) for generating samples with (adaptive) 
+        rejection sampling.
+        '''
         if inity.ndim == 1:
             inity = inity[:, None]
         self.xx = initx
@@ -27,12 +44,15 @@ class ActiveGP(ActiveLearner):
         else:
             self.task_lengthscale = task_lengthscale
         self.beta = 3.24
-        self.fixmodel = fixmodel
-        self.is_adapt = is_adapt
-        self.is_uniform = is_uniform
+        self.flag_lk = flag_lk
+        self.is_adaptive = is_adaptive
         self.betalambda = betalambda
         self.sample_time_limit = sample_time_limit
     def query_best_prob(self, context):
+        '''
+        Returns the input that has the highest probability to be in the super 
+        level set for a given context.
+        '''
         x0, x0context = helper.find_closest_positive_context_param(
             context, self.xx, self.yy, self.func.param_idx, self.func.context_idx)
         self.model = self.model
@@ -62,23 +82,30 @@ class ActiveGP(ActiveLearner):
         print 'best beta=', -y_star
         self.best_beta = -y_star
         self.beta = norm.ppf(self.betalambda*norm.cdf(self.best_beta))
-        if self.fixmodel:
-            if self.beta > self.best_beta:
-                raise ValueError('beta cannot be larger than best beta')
+        if self.best_beta < 0:
+            raw_input('Warning! Cannot find any parameter to be super level set \
+                   with more than 0.5 probability. Are you sure to continue?')
+        if self.beta > self.best_beta:
+            raise ValueError('Beta cannot be larger than best beta.')
         return np.hstack((x_star, context))
 
     def gen_adaptive_samples(self, context, n=10000, m=50):
-        # rejection sampling
+        '''
+        Generate adaptive samples with rejection sampling, where the proposal 
+        distribution is uniform and truncated Gaussian mixtures.
+        Args:
+            context: the context the generator is conditioned upon.
+            n: number of proposals per iteration.
+            m: minimum number of samples to be generated.
+        '''
         def ac_f(x):
             if x.ndim == 1:
                 x = x[None, :]
             x = np.hstack((x, np.tile(context, (x.shape[0], 1))))
             mu, var = self.model.predict(x)
-            return np.squeeze((mu)/np.sqrt(var))
-        #if self.is_adapt is None:
-        #    m = 50 ############ ATTENTION: THIS IS JUST FOR TIMING
+            ret = (mu)/np.sqrt(var)
+            return ret.T[0]
         dx = len(self.func.param_idx)
-        #import pdb; pdb.set_trace()
         good_samples = np.zeros((0, dx))
         prob = np.zeros(0)
         t_start = time.time()
@@ -102,8 +129,8 @@ class ActiveGP(ActiveLearner):
         while flag or len(good_samples) <= m:
             flag = False # make sure it samples at least once
             if time.time() - t_start > self.sample_time_limit:
-                print('elapsed sampling time = {}, sampling iterations = {}'.format(time.time() - t_start), sampled_cnt)
-                raise ValueError('not enough good samples')
+                print('Elapsed sampling time = {}, sampling iterations = {}'.format(time.time() - t_start), sampled_cnt)
+                raise ValueError('Not enough good samples.')
             sampled_cnt += 1
 
             x_samples_unif = np.random.uniform(xmin, xmax, (n, dx))
@@ -114,8 +141,8 @@ class ActiveGP(ActiveLearner):
             good_samples = np.vstack((x_samples_unif, good_samples))
             prob = np.hstack((prob_unif, prob))
 
-            if len(x_samples) > 0 and self.is_adapt is not None:
-                x_samples_gmm, prob_gmm = helper.sample_gmm(x_samples, scale, n, xmin, xmax)
+            if len(x_samples) > 0 and self.is_adaptive is not None:
+                x_samples_gmm, prob_gmm = helper.sample_tgmm(x_samples, scale, n, xmin, xmax)
                 good_inds = ac_f(x_samples_gmm) > self.beta
                 x_samples_gmm = x_samples_gmm[good_inds]
                 prob_gmm = prob_gmm[good_inds]
@@ -132,20 +159,27 @@ class ActiveGP(ActiveLearner):
                 x_samples = good_samples[x_samples_inds]
 
 
-        print('number of good samples = {}'.format(len(good_samples)))
+        print('{} samples are generated with the adaptive sampler.'.format(len(good_samples)))
         self.good_samples = good_samples
         return x_samples
     def reset_sample(self):
+        '''
+        Clear the list of samples.
+        '''
         self.sampled_xx = []
         self.good_samples = []
 
-    def sample_uniform(self, context):
+    def sample_adaptive(self, context):
+        '''
+        Returns one sample from the high probability super level set for a given context,
+        using the adaptive sampler.
+        '''
         if len(self.sampled_xx) == 0:
             xx = self.gen_adaptive_samples(context)
             self.unif_samples = np.hstack((xx, np.tile(context, (xx.shape[0], 1))))
             self.sampled_xx = np.array([self.unif_samples[0]])
         else:
-            if len(self.unif_samples) == 0: #### ATTENTION THIS IS JUST FOR TIMING
+            if len(self.unif_samples) < 10: 
                 xx = self.gen_adaptive_samples(context)
                 self.unif_samples = np.hstack((xx, np.tile(context, (xx.shape[0], 1))))
 
@@ -156,18 +190,21 @@ class ActiveGP(ActiveLearner):
         self.unif_samples = np.delete(self.unif_samples, (0), axis=0)
         return self.sampled_xx[-1]
     def sample(self, context):
-        if self.is_uniform:
-            return self.sample_uniform(context)
+        '''
+        Returns one sample from the high probability super level set for a given context.
+        '''
+        if self.is_adaptive:
+            return self.sample_adaptive(context)
 
         if len(self.sampled_xx) == 0:
             self.sampled_xx = np.array([self.query_best_prob(context)])
         else:
-            # update task lengthscale
-            if self.is_adapt and len(self.sampled_xx) >= 2:
+            # Learning task-level kernel lengthscale
+            if self.flag_lk and len(self.sampled_xx) >= 2:
                 d = helper.important_d(self.sampled_xx[-1, self.func.param_idx], self.sampled_xx[:-1, self.func.param_idx], self.task_lengthscale)
                 self.task_lengthscale[d] *= 0.7
-
-            if len(self.good_samples) < 50:
+            # End of learning task-level kernel lengthscale
+            if len(self.good_samples) < 10:
                 self.gen_adaptive_samples(context)
             sid = helper.argmax_condvar(self.good_samples, self.sampled_xx[:, self.func.param_idx], self.task_lengthscale)
             new_s = np.hstack((self.good_samples[sid], context))
@@ -176,32 +213,41 @@ class ActiveGP(ActiveLearner):
         return self.sampled_xx[-1]
    
     def query(self, context):
+        '''
+        Select the next input to query.
+        '''
         if self.query_type is 'best_prob':
             return self.query_best_prob(context)
         elif self.query_type is 'lse':
             return self.query_lse(context)
 
     def retrain(self, newx=None, newy=None):
+        '''
+        Train the GP on all the training data again.
+        '''
         if newx is not None and newy is not None:
             self.xx = np.vstack((self.xx, newx))
             self.yy = np.vstack((self.yy, newy))
         lengthscale = (self.func.x_range[1] - self.func.x_range[0]) * 0.05
         k = gpy.kern.Matern52(self.func.x_range.shape[1], ARD=True, lengthscale=lengthscale)
-        #k = gpy.kern.Matern52(self.func.x_range.shape[1], ARD=False, lengthscale=0.1)
         self.model = gpy.models.GPRegression(self.xx, self.yy, k)
         for i in range(self.func.dx):
             self.model.kern.lengthscale[i:i+1].constrain_bounded(self.func.lengthscale_bound[0][i],
                 self.func.lengthscale_bound[1][i], warning=False)
         self.model['.*variance'].constrain_bounded(1e-1,2., warning=False)
-        #gpm.likelihood.variance = 0.1 # need tuning
         self.model['Gaussian_noise.variance'].constrain_bounded(1e-4,0.01, warning=False)
-        #gpm.likelihood.variance.constrain_fixed()
-        
+        # These GP hyper parameters need to be calibrated for good uncertainty predictions.
         self.model.optimize(messages=False)
         print self.model
-        #self.task_lengthscale = np.array(1./self.model.kern.lengthscale[self.func.param_idx])
 
     def query_lse(self, context):
+        '''
+        Returns the next active query on the function in a particular context 
+        using level set estimation.
+        We here implement the straddle algorithm from 
+        B. Bryan, R. C. Nichol, C. R. Genovese, J. Schneider, C. J. Miller, and L. Wasserman, 
+        "Active learning for identifying function threshold boundaries," in NIPS, 2006.
+        '''
         x0, x0context = helper.find_closest_positive_context_param(
             context, self.xx, self.yy, self.func.param_idx, self.func.context_idx)
         self.model = self.model

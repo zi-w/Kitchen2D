@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # Copyright (c) 2017 Zi Wang
 import kitchen_stuff as ks
-from kitchen_stuff import Kitchen2D, Gripper
+from kitchen_stuff import Kitchen2D
+from gripper import Gripper
 import sys
 import numpy as np
 import cPickle as pickle
@@ -36,15 +37,17 @@ class Scoop(object):
         self.param_idx = [0, 1, 2, 3, 4, 5, 6]
         self.dx = len(self.x_range[0])
         self.task_lengthscale = np.ones(9)
+        self.do_gui = False
     def check_legal(self, x):
         rel_x1, rel_y1, rel_x2, rel_y2, rel_x3, rel_y3, grasp_ratio, cw1, ch1 = x
+        settings[0]['do_gui'] = self.do_gui
         kitchen = Kitchen2D(**settings[0])
         gripper = Gripper(kitchen, (5,8), 0)
         cup = ks.make_cup(kitchen, (0,0), 0, cw1, ch1, 0.5)
-        spoon = ks.make_good_spoon(kitchen, (5,10), 0, 1, 3, 0.2)
-        gripper.set_spoon_grasped(spoon, grasp_ratio, (5,10), 0)
+        spoon = ks.make_spoon(kitchen, (5,10), 0, 0.2, 3, 1.)
+        gripper.set_grasped(spoon, grasp_ratio, (5,10), 0)
         dposa1, dposa2 = gripper.get_scoop_init_end_pose(cup, (rel_x1, rel_y1), (rel_x3, rel_y3))
-        gripper.set_spoon_grasped(spoon, grasp_ratio, dposa1[:2], dposa1[2])
+        gripper.set_grasped(spoon, grasp_ratio, dposa1[:2], dposa1[2])
         g2 = gripper.simulate_itself()
         collision = g2.check_point_collision(dposa1[:2], dposa1[2])
 

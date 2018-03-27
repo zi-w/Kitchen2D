@@ -100,7 +100,7 @@ class ActiveNN(ActiveLearner):
         return np.hstack((x_star, context))
     def reset_sample(self):
         pass
-    def sample_uniform(self, context, N=10):
+    def sample_adaptive(self, context, N=10):
         xx = self.gen_adaptive_samples(context, m=N)
         return np.hstack((xx, np.tile(context, (xx.shape[0], 1))))
     def gen_adaptive_samples(self, context, n=10000, m=50):
@@ -146,7 +146,7 @@ class ActiveNN(ActiveLearner):
             prob = np.hstack((prob_unif, prob))
 
             if len(x_samples) > 0:
-                x_samples_gmm, prob_gmm = helper.sample_gmm(x_samples, scale, n, xmin, xmax)
+                x_samples_gmm, prob_gmm = helper.sample_tgmm(x_samples, scale, n, xmin, xmax)
                 good_inds = ac_f(x_samples_gmm) > self.beta
                 x_samples_gmm = x_samples_gmm[good_inds]
                 prob_gmm = prob_gmm[good_inds]

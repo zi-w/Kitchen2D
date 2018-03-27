@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # Copyright (c) 2017 Zi Wang
 import kitchen_stuff as ks
-from kitchen_stuff import Kitchen2D, Gripper
+from kitchen_stuff import Kitchen2D
+from gripper import Gripper
 import sys
 import numpy as np
 import cPickle as pickle
@@ -29,15 +30,18 @@ class Pour(object):
         #grasp_ratio, relative_pos_x, relative_pos_y, dangle, cw1, ch1, cw2, ch2
         self.x_range = np.array(
             [[0., -10., 1., np.pi/2, 4., 4., 3., 3.], 
-            [1., 10., 10., np.pi, 8., 5., 4.5, 5.]])
+            [1., 10., 10., np.pi, 5., 5., 4.5, 5.]])
+            #[1., 10., 10., np.pi, 8., 5., 4.5, 5.]]) this is the upper bound used in the paper.
         self.lengthscale_bound = np.array([np.ones(8)*0.1, [0.15, 0.5, 0.5, 0.2, 0.5, 0.5, 0.5, 0.5]])
         self.context_idx = [4, 5, 6, 7]
         self.param_idx = [0, 1, 2, 3]
         self.dx = len(self.x_range[0])
         self.task_lengthscale = np.ones(8)*10
+        self.do_gui = False
     def check_legal(self, x):
         grasp_ratio, rel_x, rel_y, dangle, cw1, ch1, cw2, ch2 = x
         dangle *= np.sign(rel_x)
+        settings[0]['do_gui'] = self.do_gui
         kitchen = Kitchen2D(**settings[0])
         gripper = Gripper(kitchen, (5,8), 0)
         cup1 = ks.make_cup(kitchen, (0,0), 0, cw1, ch1, 0.5)
