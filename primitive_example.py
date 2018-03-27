@@ -51,7 +51,7 @@ def main():
     cup2 = ks.make_cup(kitchen, (-25,0), 0, pour_to_w, pour_to_h, holder_d)
     block = ks.make_block(kitchen, (-9,0), 0, 4,4)
     large_cup = ks.make_cup(kitchen, (23, 0), 0, scoop_w, scoop_h, holder_d)
-    '''
+    
     # Move
     query_gui('MOVE', kitchen)
     gripper.find_path((-5., 10), 0, maxspeed=0.5)
@@ -80,7 +80,7 @@ def main():
     # Place
     query_gui('PLACE', kitchen)
     gripper.place((10, 0), 0)
-    '''
+    
     # Scoop
     kitchen.gen_liquid_in_cup(large_cup, 1000, 'sugar')
     kitchen.gen_liquid_in_cup(cup1, 200)
