@@ -7,7 +7,6 @@ from sklearn.metrics import confusion_matrix
 import os
 from scipy.optimize import minimize
 from scipy.stats import norm
-import GPy as gpy
 from scipy.stats import truncnorm
 from functools import partial
 EPS = 1e-4
@@ -255,6 +254,7 @@ def matern52(X, X2, l):
     '''
     Matern52 kernel with inverse lengthscale l.
     '''
+    import GPy as gpy
     kern = gpy.kern.Matern52(X.shape[1], lengthscale=1./l, ARD=True)
     return kern.K(X, X2)
 

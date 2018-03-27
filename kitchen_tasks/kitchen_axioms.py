@@ -1,3 +1,5 @@
+import sys
+sys.path.append('pddlstream/')
 from kitchen_predicates import *
 from ss.model.operators import Axiom
 

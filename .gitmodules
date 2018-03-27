@@ -4,6 +4,3 @@
 [submodule "pddlstream"]
 	path = pddlstream
 	url = git@github.com:caelan/pddlstream.git
-[submodule "GPy"]
-	path = GPy
-	url = git@github.com:SheffieldML/GPy.git

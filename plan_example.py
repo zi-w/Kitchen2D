@@ -1,4 +1,5 @@
 import sys
+sys.path.append('pddlstream/')
 from ss.algorithms.dual_focused import dual_focused
 import numpy as np
 

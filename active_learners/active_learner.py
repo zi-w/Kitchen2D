@@ -5,7 +5,6 @@ from sklearn.utils import shuffle
 import cPickle as pickle
 from sklearn.metrics import confusion_matrix
 import os
-import GPy as gpy
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 from scipy.stats import norm

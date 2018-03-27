@@ -1,4 +1,6 @@
 # Define generator functions
+import sys
+sys.path.append('pddlstream/')
 import place_holders as ph
 import numpy as np
 

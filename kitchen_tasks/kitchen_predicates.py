@@ -1,4 +1,5 @@
 import sys
+sys.path.append('pddlstream/')
 from ss.model.functions import Predicate, rename_functions
 
 # Parameter names (for predicate, action, axiom, and stream declarations)

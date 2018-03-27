@@ -1,5 +1,7 @@
 # author: Caelan Garrett and Zi Wang
 import numpy as np
+import sys
+sys.path.append('motion-planners')
 try:
     from motion_planners.rrt_connect import birrt
     from motion_planners.rrt_connect import direct_path

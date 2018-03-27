@@ -1,3 +1,5 @@
+import sys
+sys.path.append('pddlstream/')
 import numpy as np
 from ss.model.problem import get_length, get_cost
 

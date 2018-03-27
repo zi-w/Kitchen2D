@@ -11,7 +11,7 @@ We developed our code building upon several existing packages:
 * [numpy](http://www.numpy.org/), version 1.13.3 or higher.
 * [scipy](https://www.scipy.org), version 0.19.1 or higher.
 
-In particular, motion-planners, pddlstream and GPy are included as submodules in this repository. 
+In particular, motion-planners and pddlstream are included as submodules in this repository. 
 
 ## System Requirement
 We tested our code with Python 2.7.6 on Ubuntu 14.04 LTS (64-bit) and Mac OS X. To install pybox2d, GPy and Fast Downward, follow the following steps.
@@ -20,7 +20,9 @@ We tested our code with Python 2.7.6 on Ubuntu 14.04 LTS (64-bit) and Mac OS X. 
 
 2. Follow the instructions [here](https://github.com/pybox2d/pybox2d/blob/master/INSTALL.md) to install [pybox2d](https://github.com/pybox2d/pybox2d).
 
-3. To run the planning examples, follow the instructions [here](http://www.fast-downward.org/ObtainingAndRunningFastDownward) to obtain [Fast Downward](http://www.fast-downward.org).
+3. To run the learning examples, follow the instructions [here](https://github.com/SheffieldML/GPy#getting-started-installing-with-pip) to install [GPy](https://sheffieldml.github.io/GPy/).
+
+4. To run the planning examples, follow the instructions [here](http://www.fast-downward.org/ObtainingAndRunningFastDownward) to obtain [Fast Downward](http://www.fast-downward.org).
 
 ## Quick Start
 Once you confirm the system requirements are satisfied, make a copy of this repository with your favorite method, e.g. 
