@@ -10,13 +10,14 @@ We developed our code building upon several existing packages:
 * [pddlstream](https://github.com/caelan/pddlstream), lightweight implementation of [STRIPStream](https://github.com/caelan/stripstream), which builds upon the [Fast Downward](http://www.fast-downward.org) planner.
 * [numpy](http://www.numpy.org/), version 1.13.3 or higher.
 * [scipy](https://www.scipy.org), version 0.19.1 or higher.
+* [sklearn](http://scikit-learn.org/stable/), version 0.18.1 or higher.
 
 In particular, motion-planners and pddlstream are included as submodules in this repository. 
 
 ## System Requirement
 We tested our code with Python 2.7.6 on Ubuntu 14.04 LTS (64-bit) and Mac OS X. To install pybox2d, GPy and Fast Downward, follow the following steps.
 
-1. Install numpy and scipy, following the instructions [here](https://www.scipy.org/install.html).
+1. Install numpy, scipy and sklearn, following the instructions [here](https://www.scipy.org/install.html) and [here](http://scikit-learn.org/stable/install.html).
 
 2. Follow the instructions [here](https://github.com/pybox2d/pybox2d/blob/master/INSTALL.md) to install [pybox2d](https://github.com/pybox2d/pybox2d).
 
@@ -40,7 +41,7 @@ Now you should be able to run the examples below.
 ## Examples
 
 ### Example of Primitives
-The motion premitives are in kitchen_stuff.py. An example of using the primitives is in primitive_example.py. Try
+An example of using the primitives is in primitive_example.py. Try
 ```
 python primitive_example.py
 ```
