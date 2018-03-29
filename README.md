@@ -53,7 +53,7 @@ python learn_example.py
 ```
 
 ### Example of Planning
-plan_example.py is an example of planning with learned pouring and scooping actions. We use STRIPSream as the backend planner. The goal of the task in plan_example.py is to “serve” a cup of coffee with cream and sugar by placing it on the green coaster near the edge of the table. [Click here for vidoes of plans.](https://www.youtube.com/playlist?list=PLoWhBFPMfSzDbc8CYelsbHZa1d3uz-W_c&disable_polymer=true). Try
+plan_example.py is an example of planning with learned pouring and scooping actions. We use STRIPSream as the backend planner. The goal of the task in plan_example.py is to “serve” a cup of coffee with cream and sugar by placing it on the green coaster near the edge of the table. [Click here for vidoes of plans](https://www.youtube.com/playlist?list=PLoWhBFPMfSzDbc8CYelsbHZa1d3uz-W_c&disable_polymer=true). Try
 ```
 python plan_example.py
 ```
