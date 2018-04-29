@@ -1,0 +1,5 @@
+domain.pddl
+problem.pddl
+output.sas
+sas_plan
+**/*.pyc
