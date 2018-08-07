@@ -14,7 +14,7 @@ We developed our code building upon several existing packages:
 
 In particular, motion-planners and pddlstream are included as submodules in this repository. 
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/QWjLYjN8axg" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+[![Video Demo](https://img.youtube.com/vi/QWjLYjN8axg/0.jpg)](https://www.youtube.com/watch?v=QWjLYjN8axg)
 
 ## System Requirement
 We tested our code with Python 2.7.6 on Ubuntu 14.04 LTS (64-bit) and Mac OS X. To install pybox2d, GPy and Fast Downward, follow the following steps.
