@@ -64,13 +64,14 @@ python plan_example.py
 ## Citation
 Please cite our work if you would like to use the code.
 ```
-@article{wang2018active,
-  title={Active model learning and diverse action sampling for task and motion planning},
-  author={Wang, Zi and Garrett, Caelan Reed and Kaelbling, Leslie Pack and Lozano-P{\'e}rez, Tom{\'a}s},
-  journal={arXiv preprint arXiv:1803.00967},
-  year={2018}
+@inproceedings{wangIROS2018,
+    author={Zi Wang and Caelan Reed Garrett and Leslie Pack Kaelbling and Tomas Lozano-Perez},
+    title={Active model learning and diverse action sampling for task and motion planning},
+    booktitle={International Conference on Intelligent Robots and Systems (IROS)},
+    year={2018},
+    url={http://lis.csail.mit.edu/pubs/wang-iros18.pdf}
 }
 ```
 
 ## References
-* Wang Z, Garrett CR, Kaelbling LP, Lozano-Pérez T. Active model learning and diverse action sampling for task and motion planning. arXiv preprint arXiv:1803.00967. 2018 Mar 2.
+* Active model learning and diverse action sampling for task and motion planning (Zi Wang, Caelan Reed Garrett, Leslie Pack Kaelbling and Tomas Lozano-Perez), In International Conference on Intelligent Robots and Systems (IROS), 2018.
