@@ -1,7 +1,7 @@
 # Kitchen2D
 
 This is a code repository of learning for task and motion planning in a 2D kitchen. 
-This repository is associated with the paper [_Active model learning and diverse action sampling for task and motion planning_](https://arxiv.org/abs/1803.00967). Our project page is [here](https://ziw.mit.edu/projects/kitchen2d/). If you have any question, please email me at ziw 'at' mit.edu, or create an issue [here](https://github.com/zi-w/Kitchen2D/issues).
+This repository is associated with the paper [_Active model learning and diverse action sampling for task and motion planning_](https://arxiv.org/abs/1803.00967). Our project page is [here](https://ziw.mit.edu/projects/kitchen2d/). If you have any question, please create an issue [here](https://github.com/zi-w/Kitchen2D/issues) and remind me via email wangzi@google.com if no reply in a week.
 
 We developed our code building upon several existing packages:
 * [pybox2d](https://github.com/pybox2d/pybox2d), a 2D physics engine for Python based on the [Box2D](http://box2d.org/) library;
